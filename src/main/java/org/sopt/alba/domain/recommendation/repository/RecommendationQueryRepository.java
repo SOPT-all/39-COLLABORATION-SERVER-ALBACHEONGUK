@@ -23,7 +23,7 @@ public class RecommendationQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     /* 시/도 아래 시/군/구의 마감되지 않은 공고를 조회한다.
-     정렬은 PREMIUM >> LIGHT >> NORMAL, 최신 등록순, ID 오름차순*/
+     정렬은 최신 등록순, ID 오름차순*/
 
     public List<JobPosting> findOpenBySido(Long sidoId, LocalDate today, int limit) {
         return queryFactory
