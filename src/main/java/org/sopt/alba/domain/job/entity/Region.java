@@ -45,4 +45,8 @@ public class Region {
     public static Region sigungu(Long id, String name, Region sido) {
         return new Region(id, name, 2, sido);
     }
+
+    public String getFullName() {
+        return parent == null ? name : parent.getName() + " " + name;
+    }
 }

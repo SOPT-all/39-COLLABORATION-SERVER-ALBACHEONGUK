@@ -3,6 +3,7 @@ package org.sopt.alba.domain.job.entity;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,8 +24,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.sopt.alba.common.entity.BaseTimeEntity;
+import org.sopt.alba.domain.job.enums.EmploymentType;
 import org.sopt.alba.domain.job.enums.ExposureType;
 import org.sopt.alba.domain.job.enums.PayType;
+import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 
 @Getter
@@ -38,11 +41,11 @@ public class JobPosting extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "region_id", nullable = false)        // 시·군·구
+    @JoinColumn(name = "region_id", nullable = false)        // 시,군,구
     private Region region;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "job_category_code", nullable = false)
+    @JoinColumn(name = "job_category_code", nullable = false) // 소분류
     private JobCategory jobCategory;
 
     @Column(nullable = false, length = 100)
@@ -73,8 +76,13 @@ public class JobPosting extends BaseTimeEntity {
     @Column(nullable = false)
     private int payAmount;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30)
-    private String workPeriod;
+    private WorkPeriod workPeriod;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private EmploymentType employmentType;
 
     private LocalTime startTime;
 
@@ -93,7 +101,7 @@ public class JobPosting extends BaseTimeEntity {
     private ExposureType exposureType;
 
     @Column(nullable = false)
-    private LocalDate publishedAt;
+    private LocalDate publishedAt;     // 등록일 (n일 전 라벨 기준)
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "posting_workday", joinColumns = @JoinColumn(name = "job_posting_id"))
@@ -101,13 +109,17 @@ public class JobPosting extends BaseTimeEntity {
     @Column(name = "workday", length = 10)
     private Set<Workday> workdays = new HashSet<>();
 
+    @Embedded
+    private JobRequirement requirement = JobRequirement.none();   // 경력,우대 조건 (이력서 매칭용)
+
     @Builder
     private JobPosting(Region region, JobCategory jobCategory, String companyName, String title,
                        String dong, String addressDetail, String nearbySubway, String imageUrl,
-                       String applyMethod, PayType payType, int payAmount, String workPeriod,
+                       String applyMethod, PayType payType, int payAmount, WorkPeriod workPeriod,
+                       EmploymentType employmentType,
                        LocalTime startTime, LocalTime endTime, boolean daysNegotiable,
                        boolean timeNegotiable, LocalDate deadline, ExposureType exposureType,
-                       LocalDate publishedAt, Set<Workday> workdays) {
+                       LocalDate publishedAt, Set<Workday> workdays, JobRequirement requirement) {
         this.region = region;
         this.jobCategory = jobCategory;
         this.companyName = companyName;
@@ -120,6 +132,7 @@ public class JobPosting extends BaseTimeEntity {
         this.payType = payType;
         this.payAmount = payAmount;
         this.workPeriod = workPeriod;
+        this.employmentType = employmentType == null ? EmploymentType.PART_TIME : employmentType;
         this.startTime = startTime;
         this.endTime = endTime;
         this.daysNegotiable = daysNegotiable;
@@ -129,6 +142,16 @@ public class JobPosting extends BaseTimeEntity {
         this.publishedAt = publishedAt;
         this.workdays = (workdays == null || workdays.isEmpty())
                 ? new HashSet<>() : EnumSet.copyOf(workdays);
+        this.requirement = requirement == null ? JobRequirement.none() : requirement;
+    }
+
+    public JobRequirement getRequirement() {
+        return requirement == null ? JobRequirement.none() : requirement;
+    }
+
+    // TODO applyMethod 값 형식이 더미 시트에서 확정되면 enum 비교로 바꾼다. 지금은 '온라인' 글자가 들어 있는지로 판단
+    public boolean isOnlineApplicable() {
+        return applyMethod != null && applyMethod.contains("온라인");
     }
 
     /* 마감 = 마감일 < 오늘, 마감일이 없으면 상시모집이라 마감 아님 */
