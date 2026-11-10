@@ -29,10 +29,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<CommonResponse<Void>> handleBindException(BindException e) {
+        FieldError fieldError = e.getBindingResult().getFieldError();
+
+        if (fieldError != null && fieldError.isBindingFailure()) {
+            String message = "'" + fieldError.getField() + "' 파라미터의 형식이 올바르지 않습니다.";
+            return CommonResponse.error(GlobalErrorCode.INVALID_PARAMETER_TYPE, message);
+        }
+
         String message = e.getBindingResult()
-                .getFieldErrors()
+                .getAllErrors()
                 .stream()
-                .map(FieldError::getDefaultMessage)
+                .map(MessageSourceResolvable::getDefaultMessage)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(GlobalErrorCode.INVALID_INPUT.getMessage());
