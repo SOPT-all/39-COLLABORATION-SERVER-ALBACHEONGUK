@@ -20,14 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RecommendationService {
 
-    private static final int REGION_RECOMMENDATION_SIZE = 8; // TODO 카드 개수 확정 필요
+    private static final int REGION_RECOMMENDATION_SIZE = 4;
     private static final int SIDO_DEPTH = 1;
 
     private final RegionRepository regionRepository;
     private final RecommendationQueryRepository recommendationQueryRepository;
     private final Clock clock;
-
-    //이력서 추천 로직도 넣기
 
     /* 시/도 기준으로 지역별 공고를 조회 */
     public RegionRecommendationResponse getRegionRecommendations(Long sidoId) {

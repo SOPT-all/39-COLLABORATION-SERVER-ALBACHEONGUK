@@ -23,8 +23,6 @@ public class RecommendationController {
 
     private final RecommendationService recommendationService;
 
-    //이력서 기반 추천 넣기
-
     @Operation(
             summary = "지역별 공고 조회",
             description = "시/도 ID를 기준으로 마감되지 않은 지역 공고를 조회합니다."
