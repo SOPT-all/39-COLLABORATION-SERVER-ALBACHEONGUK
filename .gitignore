@@ -42,3 +42,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Local credentials ###
+.env
+.env.*
+!.env.example
+application-private.properties

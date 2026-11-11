@@ -1,8 +1,27 @@
 spring:
   application:
     name: alba
+  config:
+    import: optional:file:./.env[.properties]
+  profiles:
+    default: local
   jackson:
     time-zone: Asia/Seoul
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: alba
+        default_batch_fetch_size: 100
+
+supabase:
+  storage:
+    enabled: ${SUPABASE_STORAGE_ENABLED:false}
+    url: ${SUPABASE_URL:}
+    secret-key: ${SUPABASE_SECRET_KEY:}
+    bucket: ${SUPABASE_IMAGE_BUCKET:job-images}
+    signed-url-ttl-seconds: ${SUPABASE_SIGNED_URL_TTL_SECONDS:600}
+    connect-timeout: ${SUPABASE_CONNECT_TIMEOUT:3s}
+    read-timeout: ${SUPABASE_READ_TIMEOUT:5s}
