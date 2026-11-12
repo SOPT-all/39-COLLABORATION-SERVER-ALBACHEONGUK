@@ -1,6 +1,8 @@
 spring:
   application:
     name: alba
+  config:
+    import: optional:file:./.env[.properties]
   profiles:
     default: local
   jackson:
@@ -18,6 +20,16 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${SUPABASE_DB_USERNAME}
     password: ${SUPABASE_DB_PASSWORD}
+
+supabase:
+  storage:
+    enabled: ${SUPABASE_STORAGE_ENABLED:false}
+    url: ${SUPABASE_URL:}
+    secret-key: ${SUPABASE_SECRET_KEY:}
+    bucket: ${SUPABASE_IMAGE_BUCKET:job-images}
+    signed-url-ttl-seconds: ${SUPABASE_SIGNED_URL_TTL_SECONDS:600}
+    connect-timeout: ${SUPABASE_CONNECT_TIMEOUT:3s}
+    read-timeout: ${SUPABASE_READ_TIMEOUT:5s}
 
 springdoc:
   swagger-ui:
