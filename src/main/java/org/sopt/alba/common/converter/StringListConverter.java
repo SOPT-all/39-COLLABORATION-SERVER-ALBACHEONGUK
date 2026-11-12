@@ -5,7 +5,7 @@ import jakarta.persistence.Converter;
 import java.util.Arrays;
 import java.util.List;
 
-/** List<String> 을 "A01,A02" (콤마 문자열)로. 얘도 필요 없으면 지우기 */
+// List<String> 을 "A01,A02" (콤마 문자열)로.
 
 @Converter
 public class StringListConverter implements AttributeConverter<List<String>, String> {

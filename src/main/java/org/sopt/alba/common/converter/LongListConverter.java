@@ -6,8 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** List<Long> 을 "11,12,13" (콤마 문자열)로 -> 이거 필요 없으면 파일 지우기 */
-
+// List<Long> 을 "11,12,13" (콤마 문자열)로
 @Converter
 public class LongListConverter implements AttributeConverter<List<Long>, String> {
 

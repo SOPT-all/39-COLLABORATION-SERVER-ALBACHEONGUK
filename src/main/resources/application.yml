@@ -1,8 +1,25 @@
 spring:
   application:
     name: alba
+  profiles:
+    default: local
   jackson:
     time-zone: Asia/Seoul
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: create
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+  datasource:
+    url: jdbc:postgresql://{RDS_ENDPOINT}:{RDS_PORT}/{RDS_DB_NAME}
+    username: { RDS_USERNAME }
+    password: { RDS_PASSWORD }
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+  default-produces-media-type: application/json
