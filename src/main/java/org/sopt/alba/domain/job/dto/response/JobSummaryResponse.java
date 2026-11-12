@@ -54,8 +54,8 @@ public record JobSummaryResponse(
                 posting.getJobCategory().getName(),
                 posting.getPayType(),
                 posting.getPayAmount(),
-                posting.getWorkPeriod(),
-                posting.getWorkdays().stream().sorted(Comparator.naturalOrder()).toList(),   // 월→일 순
+                posting.getWorkPeriod() == null ? null : posting.getWorkPeriod().getLabel(),
+                posting.getWorkdays().stream().sorted(Comparator.naturalOrder()).toList(),   // 월>일 순
                 posting.isDaysNegotiable(),
                 posting.getStartTime(),
                 posting.getEndTime(),

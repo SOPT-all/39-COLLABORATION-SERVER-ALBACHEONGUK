@@ -15,6 +15,11 @@ spring:
       hibernate:
         default_schema: alba
         default_batch_fetch_size: 100
+  datasource:
+    url: ${SUPABASE_DB_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${SUPABASE_DB_USERNAME}
+    password: ${SUPABASE_DB_PASSWORD}
 
 supabase:
   storage:
