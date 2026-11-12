@@ -28,6 +28,7 @@ import org.sopt.alba.domain.recommendation.enums.RecommendationStatus;
 import org.sopt.alba.domain.recommendation.repository.RecommendationQueryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.sopt.alba.domain.job.enums.Workday;
 
 @Slf4j
 @Service
@@ -141,7 +142,7 @@ public class RecommendationService {
         if (!request.categoryCodes().isEmpty()) {
             return new HashSet<>(request.categoryCodes());
         }
-        if (request.hasKeyword()) {
+        if (request.keyword() != null && !request.keyword().isEmpty()) {
             return new HashSet<>(recommendationQueryRepository.findCategoryCodesByKeyword(request.keyword()));
         }
         return Set.of();
@@ -162,11 +163,15 @@ public class RecommendationService {
         LocalDate today = LocalDate.now(clock);
         List<Long> appliedJobIds = applicationRepository.findAppliedJobPostingIds(memberId);
 
-        // TODO 이력서에 희망 근무지역이 없을 때의 처리 미정. 지금은 지역 제한 없이 추천
         List<Long> regionIds = request.regionIds().isEmpty() ? base.getDesiredRegionIds() : request.regionIds();
 
+        // List<String> -> List<Workday> 변환 추가
+        List<Workday> workdays = request.workdays().stream()
+                .map(Workday::valueOf)
+                .toList();
+
         List<JobPosting> candidates = recommendationQueryRepository.findMatchCandidates(
-                today, appliedJobIds, regionIds, request.keyword(), request.categoryCodes(), request.workdays());
+                today, appliedJobIds, regionIds, request.keyword(), request.categoryCodes(), workdays);
 
         List<ScoredPosting> recommended = candidates.stream()
                 .filter(JobPosting::isOnlineApplicable)
