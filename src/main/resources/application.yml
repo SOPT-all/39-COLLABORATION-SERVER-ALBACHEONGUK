@@ -25,3 +25,10 @@ supabase:
     signed-url-ttl-seconds: ${SUPABASE_SIGNED_URL_TTL_SECONDS:600}
     connect-timeout: ${SUPABASE_CONNECT_TIMEOUT:3s}
     read-timeout: ${SUPABASE_READ_TIMEOUT:5s}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+  default-produces-media-type: application/json
