@@ -3,6 +3,8 @@ package org.sopt.alba.domain.recommendation.dto.request;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.Objects;
+
 import org.sopt.alba.domain.job.enums.Workday;
 
 /*
@@ -14,23 +16,21 @@ import org.sopt.alba.domain.job.enums.Workday;
 // TODO 근무기간이랑 급여 조건 필터는 공고 검색 API의 파라미터가 확정되면 같은 이름으로 추가하기
 
 public record ResumeRecommendationRequest(
-        @Positive(message = "resumeId는 1 이상이어야 합니다.")
-        Long resumeId,                 // 드롭다운에서 고른 이력서 (없으면 default)
-        @Size(max = 30, message = "검색어는 30자 이하여야 합니다.")
+        Long memberId,
+        Long resumeId,
         String keyword,
-        List<Long> regionIds,          // 지역 필터
-        List<String> categoryCodes,    // 업직종 필터
-        List<Workday> workdays         // 근무요일 필터
-) {
+        List<Long> regionIds,
+        List<String> categoryCodes,
+        List<String> workdays) {
 
     public ResumeRecommendationRequest {
-        keyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
-        regionIds = regionIds == null ? List.of() : List.copyOf(regionIds);
-        categoryCodes = categoryCodes == null ? List.of() : List.copyOf(categoryCodes);
-        workdays = workdays == null ? List.of() : List.copyOf(workdays);
+        regionIds = withoutEmpty(regionIds);
+        categoryCodes = withoutEmpty(categoryCodes).stream().map(String::trim).filter(code -> !code.isEmpty()).toList();
+        workdays = withoutEmpty(workdays);
     }
 
-    public boolean hasKeyword() {
-        return keyword != null;
+    private static <T> List<T> withoutEmpty(List<T> values) {
+        if (values == null) { return List.of(); }
+        return values.stream().filter(Objects::nonNull).toList();
     }
 }

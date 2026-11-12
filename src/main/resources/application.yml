@@ -8,15 +8,16 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     properties:
       hibernate:
+        default_schema: alba
         default_batch_fetch_size: 100
   datasource:
-    url: jdbc:h2:mem:alba;MODE=MySQL;DATABASE_TO_LOWER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SUPABASE_DB_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${SUPABASE_DB_USERNAME}
+    password: ${SUPABASE_DB_PASSWORD}
 
 springdoc:
   swagger-ui:
