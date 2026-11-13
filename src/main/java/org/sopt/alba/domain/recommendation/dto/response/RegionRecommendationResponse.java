@@ -4,8 +4,7 @@ import java.util.List;
 import org.sopt.alba.domain.job.dto.response.JobSummaryResponse;
 
 public record RegionRecommendationResponse(
-        Long sidoId,
+        Long sido,
         String sidoName,
         List<JobSummaryResponse> jobs
-) {
-}
+) {}
