@@ -32,10 +32,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class JobSearchController {
 
     private static final List<String> SEARCH_PARAMETERS = List.of(
-            "keyword", "regionIds", "categoryCodes", "workdays", "workTimeCodes",
+            "keyword", "regionIds", "categoryCodes", "workdays",
             "payType", "minPay", "maxPay", "ongoing", "sort", "page", "size");
     private static final Set<String> MULTI_VALUE_PARAMETERS =
-            Set.of("regionIds", "categoryCodes", "workdays", "workTimeCodes");
+            Set.of("regionIds", "categoryCodes", "workdays");
 
     private final JobSearchService jobSearchService;
 
@@ -58,6 +58,9 @@ public class JobSearchController {
     }
 
     private boolean hasInvalidSearchParameter(HttpServletRequest request) {
+        if (request.getParameterMap().containsKey("workTimeCodes")) {
+            return true;
+        }
         for (String parameter : SEARCH_PARAMETERS) {
             String[] values = request.getParameterValues(parameter);
             if (values == null) {

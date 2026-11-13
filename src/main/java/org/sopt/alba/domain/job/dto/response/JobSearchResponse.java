@@ -48,7 +48,6 @@ public record JobSearchResponse(
             List<Long> regionIds,
             List<String> categoryCodes,
             List<Workday> workdays,
-            List<String> workTimeCodes,
             String payType,
             Integer minPay,
             Integer maxPay,
@@ -56,7 +55,7 @@ public record JobSearchResponse(
     ) {
         private static AppliedFilters of(JobSearchRequest request) {
             return new AppliedFilters(request.regionIds(), request.categoryCodes(), request.workdays(),
-                    request.workTimeCodes(), request.payType(), request.minPay(), request.maxPay(),
+                    request.payType(), request.minPay(), request.maxPay(),
                     Boolean.parseBoolean(request.ongoing()));
         }
     }

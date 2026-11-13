@@ -35,7 +35,7 @@ public class JobSearchService {
     private final Clock clock;
 
     public JobSearchResponse findJobs(JobSearchRequest request) {
-        if (!ONGOING_VALUES.contains(request.ongoing()) || !request.workTimeCodes().isEmpty()) {
+        if (!ONGOING_VALUES.contains(request.ongoing())) {
             throw new BusinessException(GlobalErrorCode.INVALID_PARAMETER_TYPE);
         }
         PayType payType = findPayType(request.payType());
