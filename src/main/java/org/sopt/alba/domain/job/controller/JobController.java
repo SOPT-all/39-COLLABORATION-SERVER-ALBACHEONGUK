@@ -23,6 +23,6 @@ public class JobController {
     @Operation(summary = "필터 옵션 조회")
     @GetMapping("/filters")
     public ResponseEntity<CommonResponse<JobFilterOptionsResponse>> findFilterOptions() {
-        return CommonResponse.success(JobSuccessCode.FILTER_OPTION_SUCCESS, jobFilterService.findOptions());
+        return CommonResponse.success(JobSuccessCode.GET_JOB_FILTERS_SUCCESS, jobFilterService.findOptions());
     }
 }

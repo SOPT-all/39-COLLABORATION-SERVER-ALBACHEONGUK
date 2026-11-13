@@ -1,23 +1,11 @@
 package org.sopt.alba.domain.job.service;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse;
-import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.CategoryOption;
-import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.CodeOption;
-import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.DistrictOption;
-import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.RegionOption;
-import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.SubcategoryOption;
-import org.sopt.alba.domain.job.entity.JobCategory;
-import org.sopt.alba.domain.job.entity.Region;
-import org.sopt.alba.domain.job.enums.JobPayTypeCode;
-import org.sopt.alba.domain.job.enums.JobWorkPeriodCode;
-import org.sopt.alba.domain.job.enums.PayType;
+import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.HierarchyOption;
+import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.NamedOption;
 import org.sopt.alba.domain.job.enums.Workday;
 import org.sopt.alba.domain.job.repository.JobCategoryRepository;
 import org.sopt.alba.domain.job.repository.RegionRepository;
@@ -37,42 +25,25 @@ public class JobFilterService {
         return new JobFilterOptionsResponse(
                 findRegions(),
                 findCategories(),
-                Arrays.stream(JobWorkPeriodCode.values())
-                        .map(period -> new CodeOption(period.name(), period.getLabel()))
-                        .toList(),
+                List.of(), // 시간대별 시작·종료 기준 확정 후 제공
+                List.of(new NamedOption("HOURLY_10000_PLUS", "시급 10,000원 이상")),
                 Arrays.stream(Workday.values())
-                        .map(day -> new CodeOption(day.name(), day.getLabel()))
-                        .toList(),
-                Arrays.stream(PayType.values())
-                        .map(pay -> new CodeOption(JobPayTypeCode.toApiCode(pay), pay.getLabel()))
+                        .map(day -> new NamedOption(day.name(), day.getLabel() + "요일"))
                         .toList());
     }
 
-    private List<RegionOption> findRegions() {
-        List<Region> regions = regionRepository.findAll(Sort.by("id"));
-        var districtsByRegion = regions.stream()
-                .filter(region -> region.getParent() != null)
-                .collect(groupingBy(region -> region.getParent().getId(),
-                        mapping(region -> new DistrictOption(region.getId(), region.getName()), toList())));
-
-        return regions.stream()
-                .filter(region -> region.getParent() == null)
-                .map(region -> new RegionOption(region.getId(), region.getName(),
-                        districtsByRegion.getOrDefault(region.getId(), List.of())))
+    private List<HierarchyOption> findRegions() {
+        // 현재 DB에는 지역 ID만 있다. 지역 코드 매핑을 확정하기 전에는 검색에 쓸 수 있도록 ID를 문자열로 제공한다.
+        return regionRepository.findAll(Sort.by("id")).stream()
+                .map(region -> new HierarchyOption(region.getId().toString(), region.getName(),
+                        region.getParent() == null ? null : region.getParent().getId().toString()))
                 .toList();
     }
 
-    private List<CategoryOption> findCategories() {
-        List<JobCategory> categories = jobCategoryRepository.findAll(Sort.by("code"));
-        var subcategoriesByCategory = categories.stream()
-                .filter(category -> category.getParent() != null)
-                .collect(groupingBy(category -> category.getParent().getCode(),
-                        mapping(category -> new SubcategoryOption(category.getCode(), category.getName()), toList())));
-
-        return categories.stream()
-                .filter(category -> category.getParent() == null)
-                .map(category -> new CategoryOption(category.getCode(), category.getName(),
-                        subcategoriesByCategory.getOrDefault(category.getCode(), List.of())))
+    private List<HierarchyOption> findCategories() {
+        return jobCategoryRepository.findAll(Sort.by("code")).stream()
+                .map(category -> new HierarchyOption(category.getCode(), category.getName(),
+                        category.getParent() == null ? null : category.getParent().getCode()))
                 .toList();
     }
 }

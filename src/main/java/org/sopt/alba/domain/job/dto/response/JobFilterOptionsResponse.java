@@ -3,24 +3,15 @@ package org.sopt.alba.domain.job.dto.response;
 import java.util.List;
 
 public record JobFilterOptionsResponse(
-        List<RegionOption> regions,
-        List<CategoryOption> categories,
-        List<CodeOption> workPeriods,
-        List<CodeOption> workDays,
-        List<CodeOption> payTypes
+        List<HierarchyOption> regions,
+        List<HierarchyOption> categories,
+        List<NamedOption> workTimes,
+        List<NamedOption> payConditions,
+        List<NamedOption> workdays
 ) {
-    public record RegionOption(Long id, String name, List<DistrictOption> children) {
+    public record HierarchyOption(String code, String name, String parentCode) {
     }
 
-    public record DistrictOption(Long id, String name) {
-    }
-
-    public record CategoryOption(String code, String name, List<SubcategoryOption> children) {
-    }
-
-    public record SubcategoryOption(String code, String name) {
-    }
-
-    public record CodeOption(String code, String label) {
+    public record NamedOption(String code, String name) {
     }
 }
