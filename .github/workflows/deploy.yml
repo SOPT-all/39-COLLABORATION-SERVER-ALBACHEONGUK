@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: alba-production-deploy
@@ -17,6 +18,7 @@ jobs:
     # workflow_dispatch로 main 외 브랜치를 선택했을 때는 배포하지 않는다.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       EC2_HOST: ${{ secrets.EC2_HOST }}
       EC2_USER: ${{ secrets.EC2_USER }}
@@ -24,6 +26,8 @@ jobs:
       EC2_KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
       APP_DIR: ${{ vars.ALBA_APP_DIR }}
       APP_SERVICE: ${{ vars.ALBA_SERVICE_NAME }}
+      AWS_REGION: ap-northeast-2
+      EC2_SECURITY_GROUP_ID: ${{ vars.ALBA_EC2_SECURITY_GROUP_ID }}
 
     steps:
       - name: Check out main
@@ -66,10 +70,23 @@ jobs:
           chmod 600 "$HOME/.ssh/alba_deploy_key" "$HOME/.ssh/known_hosts"
           ssh-keygen -y -f "$HOME/.ssh/alba_deploy_key" >/dev/null
 
+      - name: Authenticate to AWS
+        id: aws-auth
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ALBA_AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: alba-deploy-${{ github.run_id }}
+          role-duration-seconds: 3600
+          unset-current-credentials: true
+
+      - name: Allow this runner to connect over SSH
+        run: python3 scripts/ec2/temporary_ssh.py open
+
       - name: Upload application and deploy script
         run: |
           set -euo pipefail
-          ssh_options=(-i "$HOME/.ssh/alba_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
+          ssh_options=(-i "$HOME/.ssh/alba_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
           scp "${ssh_options[@]}" \
             build/libs/app.jar \
             "scripts/deploy.sh" \
@@ -78,9 +95,13 @@ jobs:
       - name: Restart service and verify health
         run: |
           set -euo pipefail
-          ssh_options=(-i "$HOME/.ssh/alba_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes)
+          ssh_options=(-i "$HOME/.ssh/alba_deploy_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
           ssh "${ssh_options[@]}" "$EC2_USER@$EC2_HOST" \
             "bash /tmp/deploy.sh '$APP_DIR' '$APP_SERVICE' '/tmp/app.jar'"
+
+      - name: Remove this run's temporary SSH access
+        if: ${{ always() && steps.aws-auth.outcome == 'success' }}
+        run: python3 scripts/ec2/temporary_ssh.py close
 
       - name: Remove SSH key
         if: always()
