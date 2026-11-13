@@ -84,8 +84,7 @@ public record JobSearchResponse(
             String applyMethod,
             LocalDate deadline,
             Integer dDay,
-            boolean closed,
-            boolean scrapped
+            boolean closed
     ) {
         private static JobItem of(JobPosting posting, LocalDate today) {
             LocalDate deadline = posting.getDeadline();
@@ -113,8 +112,7 @@ public record JobSearchResponse(
                     posting.getApplyMethod(),
                     deadline,
                     daysUntilDeadline,
-                    posting.isClosed(today),
-                    false);
+                    posting.isClosed(today));
         }
 
         private static String fullAddress(JobPosting posting) {
