@@ -15,7 +15,9 @@ public record JobSearchRequest(
         List<@NotNull Workday> workdays,
         @Schema(description = "시간대 기준이 확정되기 전까지 생략합니다. 값을 보내면 400을 반환합니다.")
         List<@NotBlank String> workTimeCodes,
-        @Schema(allowableValues = {"HOURLY", "DAILY", "WEEKLY", "MONTHLY", "YEARLY", "PER_TASK"})
+        @Schema(
+                description = "급여 유형 코드입니다. 시급 10,000원 이상은 payType=HOURLY와 minPay=10000을 함께 보냅니다.",
+                allowableValues = {"HOURLY", "DAILY", "WEEKLY", "MONTHLY", "YEARLY", "PER_TASK"})
         String payType,
         @PositiveOrZero
         @Schema(description = "선택한 급여 유형의 최소 금액입니다. payType을 함께 보내야 합니다.")

@@ -4,12 +4,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.sopt.alba.domain.job.dto.request.JobSearchRequest;
 import org.sopt.alba.domain.job.dto.request.JobSearchRequest.SortType;
 import org.sopt.alba.domain.job.entity.JobPosting;
+import org.sopt.alba.domain.job.entity.Region;
 import org.sopt.alba.domain.job.enums.ExposureType;
 import org.sopt.alba.domain.job.enums.JobPayTypeCode;
 import org.sopt.alba.domain.job.enums.WorkPeriod;
@@ -67,6 +70,8 @@ public record JobSearchResponse(
             String companyName,
             String regionName,
             String dong,
+            String fullAddress,
+            String nearbySubway,
             String categoryName,
             String payType,
             Integer payAmount,
@@ -87,12 +92,15 @@ public record JobSearchResponse(
             LocalDate deadline = posting.getDeadline();
             Integer daysUntilDeadline = deadline == null ? null : Math.toIntExact(ChronoUnit.DAYS.between(today, deadline));
             WorkPeriod workPeriod = posting.getWorkPeriod();
+            String nearbySubway = posting.getNearbySubway();
             return new JobItem(
                     posting.getId(),
                     posting.getTitle(),
                     posting.getCompanyName(),
                     posting.getRegion().getFullName(),
                     posting.getDong(),
+                    fullAddress(posting),
+                    nearbySubway == null || nearbySubway.isBlank() ? null : nearbySubway.strip(),
                     posting.getJobCategory().getName(),
                     JobPayTypeCode.toApiCode(posting.getPayType()),
                     posting.getPayAmount() == 0 ? null : posting.getPayAmount(),
@@ -108,6 +116,37 @@ public record JobSearchResponse(
                     daysUntilDeadline,
                     posting.isClosed(today),
                     false);
+        }
+
+        private static String fullAddress(JobPosting posting) {
+            Region district = posting.getRegion();
+            String province = district.getParent() == null ? null : district.getParent().getName();
+            String districtName = district.getName();
+            String dong = posting.getDong();
+            String address = posting.getAddressDetail() == null ? "" : posting.getAddressDetail().strip();
+
+            if (startsWithName(address, province)) {
+                return address;
+            }
+            if (startsWithName(address, districtName)) {
+                return joinAddress(province, address);
+            }
+            if (startsWithName(address, dong)) {
+                return joinAddress(province, districtName, address);
+            }
+            return joinAddress(province, districtName, dong, address);
+        }
+
+        private static boolean startsWithName(String address, String name) {
+            return name != null && !name.isBlank()
+                    && (address.equals(name) || address.startsWith(name + " "));
+        }
+
+        private static String joinAddress(String... parts) {
+            return Arrays.stream(parts)
+                    .filter(part -> part != null && !part.isBlank())
+                    .map(String::strip)
+                    .collect(Collectors.joining(" "));
         }
     }
 }
