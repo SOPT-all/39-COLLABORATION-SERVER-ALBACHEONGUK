@@ -2,6 +2,7 @@ package org.sopt.alba.domain.job.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
@@ -31,9 +32,11 @@ public record JobSummaryResponse(
         LocalTime endTime,
         boolean timeNegotiable,
         String applyMethod,
+        LocalDate publishedAt,
         LocalDate deadline,
         boolean closed,
-        String postedLabel         // 오늘 / n일 전 / n달 전 / n년 전
+        String postedLabel,        // 오늘 / n일 전 / n달 전 / n년 전
+        String deadlineLabel       // YYYY.MM.DD 마감 / 상시모집
 ) {
 
     public static JobSummaryResponse of(JobPosting posting, LocalDate today) {
@@ -61,10 +64,17 @@ public record JobSummaryResponse(
                 posting.getEndTime(),
                 posting.isTimeNegotiable(),
                 posting.getApplyMethod(),
+                posting.getPublishedAt(),
                 posting.getDeadline(),
                 posting.isClosed(today),
-                postedLabel(posting.getPublishedAt(), today)
+                postedLabel(posting.getPublishedAt(), today),
+                deadlineLabel(posting.getDeadline())
         );
+    }
+
+    private static String deadlineLabel(LocalDate deadline) {
+        return deadline == null ? "상시모집"
+                : deadline.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) + " 마감";
     }
 
     static String postedLabel(LocalDate publishedAt, LocalDate today) {

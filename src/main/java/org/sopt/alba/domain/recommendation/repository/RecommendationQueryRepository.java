@@ -17,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.sopt.alba.domain.job.entity.JobPosting;
 import org.sopt.alba.domain.job.entity.QJobCategory;
 import org.sopt.alba.domain.job.entity.QRegion;
+import org.sopt.alba.domain.job.enums.PayType;
+import org.sopt.alba.domain.job.enums.RecruitmentStatus;
+import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 import org.springframework.stereotype.Repository;
 
@@ -44,10 +47,10 @@ public class RecommendationQueryRepository {
                 .fetch();
     }
 
-    // TODO 공고 검색 API의 조건 메서드가 만들어지면 키워드, categoryCode, workdays 조건은 그쪽 걸로
     public List<JobPosting> findMatchCandidates(LocalDate today, Collection<Long> appliedJobIds,
                                                 Collection<Long> regionIds, String keyword,
-                                                Collection<String> categoryCodes, Collection<Workday> workdays) {
+                                                Collection<String> categoryCodes, Collection<Workday> workdays,
+                                                WorkPeriod workPeriod, PayType payType) {
         return queryFactory
                 .selectFrom(jobPosting)
                 .join(jobPosting.region, region).fetchJoin()
@@ -60,7 +63,9 @@ public class RecommendationQueryRepository {
                         inRegions(regionIds),
                         containsKeyword(keyword),
                         inCategories(categoryCodes),
-                        hasAnyWorkday(workdays)
+                        hasAnyWorkday(workdays),
+                        workPeriodEq(workPeriod),
+                        payTypeEq(payType)
                 )
                 .fetch();
     }
@@ -81,7 +86,6 @@ public class RecommendationQueryRepository {
     }
 
     /* 이름에 검색어가 들어간 업직종 코드 */
-    // TODO 얘도 스프레드 시트 들어오면 다시 확인하기
     public List<String> findCategoryCodesByKeyword(String keyword) {
         return queryFactory
                 .select(jobCategory.code)
@@ -90,10 +94,10 @@ public class RecommendationQueryRepository {
                 .fetch();
     }
 
-    /* 마감일이 없거나 오늘 이후인 공고 */
+    /* 모집 중 상태이고 마감일이 없거나 오늘 이후인 공고 */
     private BooleanExpression isOpen(LocalDate today) {
-        return jobPosting.deadline.isNull()
-                .or(jobPosting.deadline.goe(today));
+        return jobPosting.recruitmentStatus.eq(RecruitmentStatus.RECRUITING)
+                .and(jobPosting.deadline.isNull().or(jobPosting.deadline.goe(today)));
     }
 
     private BooleanExpression notApplied(Collection<Long> appliedJobIds) {
@@ -121,6 +125,14 @@ public class RecommendationQueryRepository {
 
     private BooleanExpression hasAnyWorkday(Collection<Workday> workdays) {
         return isEmpty(workdays) ? null : jobPosting.workdays.any().in(workdays);
+    }
+
+    private BooleanExpression workPeriodEq(WorkPeriod workPeriod) {
+        return workPeriod == null ? null : jobPosting.workPeriod.eq(workPeriod);
+    }
+
+    private BooleanExpression payTypeEq(PayType payType) {
+        return payType == null ? null : jobPosting.payType.eq(payType);
     }
 
     private boolean isEmpty(Collection<?> values) {

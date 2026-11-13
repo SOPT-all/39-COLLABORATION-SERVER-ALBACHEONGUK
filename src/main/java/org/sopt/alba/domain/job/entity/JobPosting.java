@@ -27,6 +27,7 @@ import org.sopt.alba.common.entity.BaseTimeEntity;
 import org.sopt.alba.domain.job.enums.EmploymentType;
 import org.sopt.alba.domain.job.enums.ExposureType;
 import org.sopt.alba.domain.job.enums.PayType;
+import org.sopt.alba.domain.job.enums.RecruitmentStatus;
 import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 
@@ -98,6 +99,10 @@ public class JobPosting extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    private RecruitmentStatus recruitmentStatus = RecruitmentStatus.RECRUITING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private ExposureType exposureType;
 
     @Column(nullable = false)
@@ -119,7 +124,8 @@ public class JobPosting extends BaseTimeEntity {
                        EmploymentType employmentType,
                        LocalTime startTime, LocalTime endTime, boolean daysNegotiable,
                        boolean timeNegotiable, LocalDate deadline, ExposureType exposureType,
-                       LocalDate publishedAt, Set<Workday> workdays, JobRequirement requirement) {
+                       LocalDate publishedAt, Set<Workday> workdays, JobRequirement requirement,
+                       RecruitmentStatus recruitmentStatus) {
         this.region = region;
         this.jobCategory = jobCategory;
         this.companyName = companyName;
@@ -138,6 +144,8 @@ public class JobPosting extends BaseTimeEntity {
         this.daysNegotiable = daysNegotiable;
         this.timeNegotiable = timeNegotiable;
         this.deadline = deadline;
+        this.recruitmentStatus = recruitmentStatus == null
+                ? RecruitmentStatus.RECRUITING : recruitmentStatus;
         this.exposureType = exposureType;
         this.publishedAt = publishedAt;
         this.workdays = (workdays == null || workdays.isEmpty())
@@ -149,13 +157,13 @@ public class JobPosting extends BaseTimeEntity {
         return requirement == null ? JobRequirement.none() : requirement;
     }
 
-    // TODO applyMethod 값 형식이 더미 시트에서 확정되면 enum 비교로 바꾼다. 지금은 '온라인' 글자가 들어 있는지로 판단
     public boolean isOnlineApplicable() {
         return applyMethod != null && applyMethod.contains("온라인");
     }
 
-    /* 마감 = 마감일 < 오늘, 마감일이 없으면 상시모집이라 마감 아님 */
+    /* 기업의 채용 완료 상태 또는 마감일 경과 시 마감 */
     public boolean isClosed(LocalDate today) {
-        return deadline != null && deadline.isBefore(today);
+        return recruitmentStatus == RecruitmentStatus.COMPLETED
+                || (deadline != null && deadline.isBefore(today));
     }
 }

@@ -7,7 +7,7 @@ import org.sopt.alba.domain.recommendation.enums.RecommendationStatus;
 
 public record ResumeRecommendationResponse(
         RecommendationStatus status,
-        ResumeSummaryResponse baseResume,        // 추천 기준 이력서 (GUEST / NO_RESUME / DRAFT_ONLY 이면 null)
+        ResumeSummaryResponse selectedResume,    // 추천 기준 이력서 (GUEST / NO_RESUME / DRAFT_ONLY 이면 null)
         List<ResumeSummaryResponse> resumes,   // 드롭다운 목록 - 최신 수정순, 작성 중 포함
         List<JobSummaryResponse> jobs              // 기본점수 + 가점 높은 순, 최대 3개
 ) {
@@ -24,10 +24,10 @@ public record ResumeRecommendationResponse(
     }
 
     /*OK, NO_RECOMMENDATION */
-    public static ResumeRecommendationResponse of(ResumeSummaryResponse baseResume,
+    public static ResumeRecommendationResponse of(ResumeSummaryResponse selectedResume,
                                                   List<ResumeSummaryResponse> resumes,
                                                   List<JobSummaryResponse> jobs) {
         RecommendationStatus status = jobs.isEmpty() ? RecommendationStatus.NO_RECOMMENDATION : RecommendationStatus.OK;
-        return new ResumeRecommendationResponse(status, baseResume, resumes, jobs);
+        return new ResumeRecommendationResponse(status, selectedResume, resumes, jobs);
     }
 }

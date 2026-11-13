@@ -28,7 +28,6 @@ import org.sopt.alba.domain.recommendation.enums.RecommendationStatus;
 import org.sopt.alba.domain.recommendation.repository.RecommendationQueryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.sopt.alba.domain.job.enums.Workday;
 
 @Slf4j
 @Service
@@ -52,7 +51,7 @@ public class RecommendationService {
     private static final Comparator<ScoredPosting> BY_MATCH = Comparator
             .comparingInt((ScoredPosting scored) -> scored.score().total()).reversed()
             .thenComparing(scored -> scored.posting().getPublishedAt(), Comparator.reverseOrder())
-            .thenComparing(scored -> scored.posting().getId(), Comparator.reverseOrder());
+            .thenComparing(scored -> scored.posting().getId());
 
     /* 시/도 기준으로 지역별 공고를 조회 */
     public RegionRecommendationResponse getRegionRecommendations(Long sidoId) {
@@ -163,15 +162,25 @@ public class RecommendationService {
         LocalDate today = LocalDate.now(clock);
         List<Long> appliedJobIds = applicationRepository.findAppliedJobPostingIds(memberId);
 
-        List<Long> regionIds = request.regionIds().isEmpty() ? base.getDesiredRegionIds() : request.regionIds();
+        List<Long> regionIds = request.regionIds().isEmpty()
+                ? base.getDesiredRegionIds()
+                : request.regionIds();
 
-        // List<String> -> List<Workday> 변환 추가
-        List<Workday> workdays = request.workdays().stream()
-                .map(Workday::valueOf)
-                .toList();
+        if (regionIds.isEmpty()) {
+            return List.of();
+        }
 
-        List<JobPosting> candidates = recommendationQueryRepository.findMatchCandidates(
-                today, appliedJobIds, regionIds, request.keyword(), request.categoryCodes(), workdays);
+        List<JobPosting> candidates =
+                recommendationQueryRepository.findMatchCandidates(
+                        today,
+                        appliedJobIds,
+                        regionIds,
+                        request.keyword(),
+                        request.categoryCodes(),
+                        request.workdays(),
+                        request.workPeriod(),
+                        request.payType()
+                );
 
         List<ScoredPosting> recommended = candidates.stream()
                 .filter(JobPosting::isOnlineApplicable)
