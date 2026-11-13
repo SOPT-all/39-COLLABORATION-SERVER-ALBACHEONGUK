@@ -25,7 +25,6 @@ public class JobFilterService {
         return new JobFilterOptionsResponse(
                 findRegions(),
                 findCategories(),
-                List.of(), // 시간대별 시작·종료 기준 확정 후 제공
                 List.of(new NamedOption("HOURLY_10000_PLUS", "시급 10,000원 이상")),
                 Arrays.stream(Workday.values())
                         .map(day -> new NamedOption(day.name(), day.getLabel() + "요일"))

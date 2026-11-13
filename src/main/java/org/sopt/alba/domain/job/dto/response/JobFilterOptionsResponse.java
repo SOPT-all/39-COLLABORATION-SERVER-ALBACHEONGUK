@@ -5,7 +5,6 @@ import java.util.List;
 public record JobFilterOptionsResponse(
         List<HierarchyOption> regions,
         List<HierarchyOption> categories,
-        List<NamedOption> workTimes,
         List<NamedOption> payConditions,
         List<NamedOption> workdays
 ) {
