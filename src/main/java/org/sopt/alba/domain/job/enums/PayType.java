@@ -10,6 +10,7 @@ public enum PayType {
     DAILY("일급"),
     WEEKLY("주급"),
     MONTHLY("월급"),
+    YEARLY("연봉"),
     PER_CASE("건별");
 
     private final String label;

@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 public enum JobSuccessCode implements SuccessCode {
 
     GET_JOBS_SUCCESS(HttpStatus.OK, "공고 목록 조회에 성공했습니다."),
-    GET_JOB_FILTERS_SUCCESS(HttpStatus.OK, "공고 필터 목록 조회에 성공했습니다.");
+    GET_JOB_FILTERS_SUCCESS(HttpStatus.OK, "공고 필터 목록 조회에 성공했습니다."),
+    FILTER_OPTION_SUCCESS(HttpStatus.OK, "필터 옵션 조회 성공");
 
     private final HttpStatus status;
     private final String message;
