@@ -48,7 +48,7 @@ public class SwaggerConfig {
                             .description(a.required()
                                     ? "목업 로그인 회원 ID (필수, 예: 1)"
                                     : "목업 로그인 회원 ID (없으면 비로그인)")
-                            .schema(new StringSchema().example("1"))));
+                            .schema(new StringSchema().example("1")._default("1"))));
             return operation;
         };
     }
