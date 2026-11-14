@@ -70,12 +70,15 @@ public class JobPosting extends BaseTimeEntity {
     @Column(length = 100)
     private String applyMethod;
 
+    @Column(name = "in_service_apply", nullable = false)
+    private boolean inServiceApply = true; // (데이터) 지원방법과 서비스 내 지원 가능 여부를 분리한다.
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PayType payType;
 
-    @Column(nullable = false)
-    private int payAmount;
+    @Column
+    private Integer payAmount; // (데이터) 급여 협의 공고는 금액을 null로 저장한다.
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
@@ -120,7 +123,7 @@ public class JobPosting extends BaseTimeEntity {
     @Builder
     private JobPosting(Region region, JobCategory jobCategory, String companyName, String title,
                        String dong, String addressDetail, String nearbySubway, String imageUrl,
-                       String applyMethod, PayType payType, int payAmount, WorkPeriod workPeriod,
+                       String applyMethod, Boolean inServiceApply, PayType payType, Integer payAmount, WorkPeriod workPeriod,
                        EmploymentType employmentType,
                        LocalTime startTime, LocalTime endTime, boolean daysNegotiable,
                        boolean timeNegotiable, LocalDate deadline, ExposureType exposureType,
@@ -135,6 +138,7 @@ public class JobPosting extends BaseTimeEntity {
         this.nearbySubway = nearbySubway;
         this.imageUrl = imageUrl;
         this.applyMethod = applyMethod;
+        this.inServiceApply = inServiceApply == null || inServiceApply; // (데이터) 기존 공고의 기본값은 지원 가능이다.
         this.payType = payType;
         this.payAmount = payAmount;
         this.workPeriod = workPeriod;
@@ -157,8 +161,9 @@ public class JobPosting extends BaseTimeEntity {
         return requirement == null ? JobRequirement.none() : requirement;
     }
 
-    public boolean isOnlineApplicable() {
-        return applyMethod != null && applyMethod.contains("온라인");
+    // (데이터) 추천 포함 여부는 양식의 전용 가능 필드로 판단한다.
+    public boolean isInServiceApplicable() {
+        return inServiceApply;
     }
 
     /* 기업의 채용 완료 상태 또는 마감일 경과 시 마감 */

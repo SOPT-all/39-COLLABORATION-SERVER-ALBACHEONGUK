@@ -2,7 +2,6 @@ package org.sopt.alba.domain.job.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -82,13 +81,16 @@ public record JobSearchResponse(
             LocalTime endTime,
             String workPeriod,
             String applyMethod,
+            LocalDate publishedAt, // (데이터) 마감 D-day 대신 등록일을 기준으로 표시한다.
+            String postedLabel, // (데이터) 오늘/n일 전/n달 전/n년 전 라벨
             LocalDate deadline,
-            Integer dDay,
+            String deadlineLabel, // (데이터) 날짜/상시모집/마감 상태 표시
+            boolean daysNegotiable, // (데이터) 요일 협의 여부
+            boolean timeNegotiable, // (데이터) 시간 협의 여부
             boolean closed
     ) {
         private static JobItem of(JobPosting posting, LocalDate today) {
             LocalDate deadline = posting.getDeadline();
-            Integer daysUntilDeadline = deadline == null ? null : Math.toIntExact(ChronoUnit.DAYS.between(today, deadline));
             WorkPeriod workPeriod = posting.getWorkPeriod();
             String nearbySubway = posting.getNearbySubway();
             return new JobItem(
@@ -101,7 +103,7 @@ public record JobSearchResponse(
                     nearbySubway == null || nearbySubway.isBlank() ? null : nearbySubway.strip(),
                     posting.getJobCategory().getName(),
                     JobPayTypeCode.toApiCode(posting.getPayType()),
-                    posting.getPayAmount() == 0 ? null : posting.getPayAmount(),
+                    posting.getPayAmount() == null || posting.getPayAmount() <= 0 ? null : posting.getPayAmount(), // (데이터)
                     null,
                     null,
                     false,
@@ -110,8 +112,13 @@ public record JobSearchResponse(
                     posting.isTimeNegotiable() ? null : posting.getEndTime(),
                     workPeriod == null ? null : workPeriod.getLabel(),
                     posting.getApplyMethod(),
+                    posting.getPublishedAt(), // (데이터) 마감일까지 남은 날짜 대신 공고 등록일을 반환한다.
+                    JobSummaryResponse.postedLabel(posting.getPublishedAt(), today), // (데이터)
                     deadline,
-                    daysUntilDeadline,
+                    posting.isClosed(today) ? "마감" : deadline == null ? "상시모집"
+                            : deadline.format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")) + " 마감", // (데이터)
+                    posting.isDaysNegotiable(), // (데이터) 협의 문구를 프론트가 표시할 수 있게 한다.
+                    posting.isTimeNegotiable(), // (데이터)
                     posting.isClosed(today));
         }
 

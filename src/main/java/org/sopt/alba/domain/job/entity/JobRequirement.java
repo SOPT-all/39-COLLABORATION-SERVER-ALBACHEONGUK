@@ -20,7 +20,6 @@ import org.sopt.alba.domain.job.enums.LanguageLevel;
  * 이력서 매칭 점수 계산에만 쓰고, 목록 카드 응답에는 내려가지 않습니다.
  */
 
-// TODO 기획 더미 시트의 컬럼(우대 스킬, 자격증, 외국어 등) 형식이 확정되면 맞춘다.
 
 @Getter
 @Embeddable
@@ -52,6 +51,10 @@ public class JobRequirement {
     @Column(name = "computer_skill_preferred", nullable = false)
     private boolean computerSkillPreferred;
 
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "preferred_computer_skills", length = 500)
+    private List<String> preferredComputerSkills = new ArrayList<>(); // (데이터) 엑셀 등 구체적인 우대 항목
+
     @Column(name = "portfolio_preferred", nullable = false)
     private boolean portfolioPreferred;
 
@@ -59,6 +62,7 @@ public class JobRequirement {
     private JobRequirement(CareerRequirement careerRequirement, int careerMonths, List<String> preferredSkills,
                            List<String> preferredCertificates, String preferredLanguage,
                            LanguageLevel preferredLanguageLevel, boolean computerSkillPreferred,
+                           List<String> preferredComputerSkills,
                            boolean portfolioPreferred) {
         this.careerRequirement = careerRequirement == null ? CareerRequirement.ANY : careerRequirement;
         this.careerMonths = careerMonths;
@@ -68,6 +72,8 @@ public class JobRequirement {
         this.preferredLanguage = preferredLanguage;
         this.preferredLanguageLevel = preferredLanguageLevel;
         this.computerSkillPreferred = computerSkillPreferred;
+        this.preferredComputerSkills = preferredComputerSkills == null
+                ? new ArrayList<>() : new ArrayList<>(preferredComputerSkills); // (데이터)
         this.portfolioPreferred = portfolioPreferred;
     }
 

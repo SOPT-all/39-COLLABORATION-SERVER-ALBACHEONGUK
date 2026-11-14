@@ -9,6 +9,7 @@ import org.sopt.alba.domain.job.enums.EmploymentType;
 import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 import org.sopt.alba.domain.member.entity.Resume;
+import org.sopt.alba.domain.member.entity.Resume.ResumeCareer;
 import org.springframework.stereotype.Component;
 
 /*
@@ -51,6 +52,16 @@ public class ResumeMatchScorer {
                 + employmentScore(resume, posting)
                 + careerScore(resume, posting);
         return new MatchScore(base, bonusScore(resume, posting));
+    }
+
+    // (데이터) 필수 경력 조건은 기본점수와 별도로 추천 후보에서 반드시 통과해야 한다.
+    public boolean passesMandatoryRequirements(Resume resume, JobPosting posting) {
+        JobRequirement requirement = posting.getRequirement();
+        if (requirement.getCareerRequirement() != org.sopt.alba.domain.job.enums.CareerRequirement.REQUIRED) {
+            return true;
+        }
+        int relatedMonths = relatedCareerMonths(resume, posting);
+        return relatedMonths > 0 && relatedMonths >= requirement.getCareerMonths();
     }
 
     /* 공고 업직종이 희망 업직종과 같거나 그 하위이면 40, 아니면 0 */
@@ -118,13 +129,13 @@ public class ResumeMatchScorer {
     }
 
     /* 이력서 경력의 업직종이 공고 업직종과 같거나 공고의 상위 업직종이면 관련 경력으로 본다. */
-    // TODO '관련 경력'의 범위 미정 (같은 대분류의 다른 소분류 경력도 인정할지)
     private int relatedCareerMonths(Resume resume, JobPosting posting) {
-        String careerCode = resume.getCareerCategoryCode();
-        if (careerCode == null) {
-            return 0;
-        }
-        return isSameOrUnder(posting.getJobCategory(), List.of(careerCode)) ? resume.getCareerMonths() : 0;
+        // (데이터) 여러 경력 중 공고 업직종과 관련된 최대 경력 기간을 사용한다.
+        return resume.getCareers().stream()
+                .filter(career -> isSameOrUnder(posting.getJobCategory(), List.of(career.getCategoryCode())))
+                .mapToInt(ResumeCareer::getMonths)
+                .max()
+                .orElse(0);
     }
 
     /* 가점 (최대 15점) */
@@ -154,8 +165,13 @@ public class ResumeMatchScorer {
             bonus += LANGUAGE_BONUS;
         }
 
-        // 컴퓨터 활용 +2
-        if (requirement.isComputerSkillPreferred() && resume.isComputerSkill()) {
+        // (데이터) 컴퓨터 활용 항목이 일치하면 +2. 기존 boolean 자료도 계속 지원한다.
+        boolean computerSkillMatch = requirement.getPreferredComputerSkills().stream()
+                .anyMatch(preferred -> resume.getComputerSkills().stream()
+                        .anyMatch(skill -> preferred.equalsIgnoreCase(skill)));
+        boolean legacyComputerSkillMatch = requirement.getPreferredComputerSkills().isEmpty()
+                && requirement.isComputerSkillPreferred() && resume.isComputerSkill();
+        if (computerSkillMatch || legacyComputerSkillMatch) {
             bonus += COMPUTER_BONUS;
         }
 

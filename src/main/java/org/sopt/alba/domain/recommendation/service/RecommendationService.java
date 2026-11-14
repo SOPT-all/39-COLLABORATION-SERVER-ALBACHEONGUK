@@ -92,18 +92,22 @@ public class RecommendationService {
 
         Map<Long, Region> regionsById = findDesiredRegions(resumes);
         List<ResumeSummaryResponse> resumeOptions = resumes.stream()
+                .filter(resume -> resume.getStatus() != org.sopt.alba.domain.member.enums.ResumeStatus.NOT_APPLICABLE) // (데이터)
                 .map(resume -> toSummary(resume, regionsById))
                 .toList();
 
         if (resumes.isEmpty()) {
             return ResumeRecommendationResponse.withoutBase(RecommendationStatus.NO_RESUME, resumeOptions);
         }
+        if (resumeOptions.isEmpty()) {
+            return ResumeRecommendationResponse.withoutBase(RecommendationStatus.NO_RESUME, resumeOptions); // (데이터)
+        }
         List<Resume> completed = resumes.stream().filter(Resume::isCompleted).toList();
         if (completed.isEmpty()) {
             return ResumeRecommendationResponse.withoutBase(RecommendationStatus.DRAFT_ONLY, resumeOptions);
         }
 
-        Resume base = selected != null ? selected : chooseBaseResume(completed, request);
+        Resume base = selected != null ? selected : chooseBaseResume(completed, request); // (데이터)
         List<JobSummaryResponse> jobs = recommend(memberId, base, request);
 
         return ResumeRecommendationResponse.of(toSummary(base, regionsById), resumeOptions, jobs);
@@ -122,21 +126,20 @@ public class RecommendationService {
     }
 
     private Resume chooseBaseResume(List<Resume> completed, ResumeRecommendationRequest request) {
-        Resume latest = completed.get(0);
-
+        // (데이터) 검색 업직종과 맞는 최신 완료 이력서를 먼저 선택하고, 없으면 최신 이력서를 쓴다.
         Set<String> searchCategoryCodes = resolveSearchCategoryCodes(request);
         if (searchCategoryCodes.isEmpty()) {
-            return latest;
+            return completed.get(0);
         }
-
         Map<String, String> parentCodes = recommendationQueryRepository.findCategoryParentCodes();
         return completed.stream()
                 .filter(resume -> resume.getDesiredCategoryCodes().stream()
                         .anyMatch(desired -> isRelatedCategory(desired, searchCategoryCodes, parentCodes)))
                 .findFirst()
-                .orElse(latest);
+                .orElse(completed.get(0));
     }
 
+    // (데이터) 업직종 필터를 우선하고, 업직종명이 검색어와 일치하면 그 코드도 사용한다.
     private Set<String> resolveSearchCategoryCodes(ResumeRecommendationRequest request) {
         if (!request.categoryCodes().isEmpty()) {
             return new HashSet<>(request.categoryCodes());
@@ -147,6 +150,7 @@ public class RecommendationService {
         return Set.of();
     }
 
+    // (데이터) 상위/하위 업직종까지 검색 조건과 관련된 이력서를 찾는다.
     private boolean isRelatedCategory(String desired, Set<String> searchCodes, Map<String, String> parentCodes) {
         if (searchCodes.contains(desired)) {
             return true;
@@ -183,7 +187,8 @@ public class RecommendationService {
                 );
 
         List<ScoredPosting> recommended = candidates.stream()
-                .filter(JobPosting::isOnlineApplicable)
+                .filter(JobPosting::isInServiceApplicable) // (데이터)
+                .filter(posting -> resumeMatchScorer.passesMandatoryRequirements(base, posting)) // (데이터)
                 .map(posting -> new ScoredPosting(posting, resumeMatchScorer.score(base, posting)))
                 .filter(scored -> scored.score().isRecommendable())
                 .sorted(BY_MATCH)

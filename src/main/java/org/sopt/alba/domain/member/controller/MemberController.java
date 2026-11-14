@@ -21,7 +21,7 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @Operation(summary = "내 프로필 조회", description = "X-Member-Id 헤더의 목업 회원 ID로 회원 이름을 조회합니다.")
+    @Operation(summary = "내 프로필 조회", description = "X-Member-Id의 목업 회원 이름과 진행 중 공고 수를 조회합니다.")
     @GetMapping("/me")
     public ResponseEntity<CommonResponse<MemberProfileResponse>> getMyProfile(
             @CurrentMember Long memberId) {

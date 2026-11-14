@@ -1,7 +1,10 @@
 package org.sopt.alba.domain.member.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,7 +33,7 @@ import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 import org.sopt.alba.domain.member.enums.ResumeStatus;
 
-// TODO 기획 더미 시트의 이력서 컬럼이 확정되면 필드와 형식을 맞춘다.
+// (데이터) 이력서 필드는 더미데이터 양식에 맞추고, 구형 단일 경력은 migration에서 컬렉션으로 옮긴다.
 
 @Getter
 @Entity
@@ -81,12 +84,9 @@ public class Resume {
     @Column(name = "desired_employment_types", length = 200)
     private List<String> desiredEmploymentTypes = new ArrayList<>();
 
-    // TODO 경력이 여러 개일 수 있으면 별도 테이블로 분리
-    @Column(name = "career_category_code", length = 20)
-    private String careerCategoryCode;             // 경력 업직종 코드
-
-    @Column(name = "career_months", nullable = false)
-    private int careerMonths;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "resume_career", joinColumns = @JoinColumn(name = "resume_id"))
+    private List<ResumeCareer> careers = new ArrayList<>(); // (데이터) 복수 업직종별 경력 기간
 
     @Convert(converter = StringListConverter.class)
     @Column(length = 500)
@@ -106,6 +106,10 @@ public class Resume {
     @Column(name = "computer_skill", nullable = false)
     private boolean computerSkill;
 
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "computer_skills", length = 500)
+    private List<String> computerSkills = new ArrayList<>(); // (데이터) 엑셀 등 구체적인 보유 항목
+
     @Column(name = "portfolio_category_code", length = 20)
     private String portfolioCategoryCode;          // 포트폴리오 분야(업직종 코드). 포트폴리오 없으면 null
 
@@ -116,9 +120,10 @@ public class Resume {
     private Resume(Member member, String title, ResumeStatus status, List<Long> desiredRegionIds,
                    List<String> desiredCategoryCodes, boolean workdaysAny, Set<Workday> desiredWorkdays,
                    boolean workPeriodAny, Set<WorkPeriod> desiredWorkPeriods,
-                   Set<EmploymentType> desiredEmploymentTypes, String careerCategoryCode, int careerMonths,
+                   Set<EmploymentType> desiredEmploymentTypes, List<ResumeCareer> careers,
                    List<String> skills, List<String> certificates, String language, LanguageLevel languageLevel,
-                   boolean computerSkill, String portfolioCategoryCode, LocalDateTime modifiedAt) {
+                   boolean computerSkill, List<String> computerSkills,
+                   String portfolioCategoryCode, LocalDateTime modifiedAt) {
         this.member = member;
         this.title = title;
         this.status = status;
@@ -129,13 +134,13 @@ public class Resume {
         this.workPeriodAny = workPeriodAny;
         this.desiredWorkPeriods = names(desiredWorkPeriods);
         this.desiredEmploymentTypes = names(desiredEmploymentTypes);
-        this.careerCategoryCode = careerCategoryCode;
-        this.careerMonths = careerMonths;
+        this.careers = careers == null ? new ArrayList<>() : new ArrayList<>(careers); // (데이터)
         this.skills = copy(skills);
         this.certificates = copy(certificates);
         this.language = language;
         this.languageLevel = languageLevel;
         this.computerSkill = computerSkill;
+        this.computerSkills = copy(computerSkills); // (데이터)
         this.portfolioCategoryCode = portfolioCategoryCode;
         this.modifiedAt = modifiedAt;
     }
@@ -168,5 +173,23 @@ public class Resume {
         return values == null
                 ? new ArrayList<>()
                 : values.stream().map(Enum::name).sorted().collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    // (데이터) 이력서에 입력한 업직종별 경력 개월 수
+    @Embeddable
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class ResumeCareer {
+        @Column(name = "career_category_code", nullable = false, length = 20)
+        private String categoryCode;
+
+        @Column(name = "career_months", nullable = false)
+        private int months;
+
+        @Builder
+        public ResumeCareer(String categoryCode, int months) {
+            this.categoryCode = categoryCode;
+            this.months = months;
+        }
     }
 }
