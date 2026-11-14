@@ -24,6 +24,7 @@ import org.sopt.alba.domain.job.entity.QJobCategory;
 import org.sopt.alba.domain.job.entity.QRegion;
 import org.sopt.alba.domain.job.enums.ExposureType;
 import org.sopt.alba.domain.job.enums.PayType;
+import org.sopt.alba.domain.job.enums.RecruitmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -108,7 +109,9 @@ public class JobSearchRepository {
             filters.and(jobPosting.payAmount.loe(request.maxPay()));
         }
         if ("true".equals(request.ongoing())) {
-            filters.and(jobPosting.deadline.isNull().or(jobPosting.deadline.goe(today)));
+            // (데이터) 진행 중 필터는 기업의 채용 완료 상태와 KST 기준 마감일을 모두 확인한다.
+            filters.and(jobPosting.recruitmentStatus.eq(RecruitmentStatus.RECRUITING)
+                    .and(jobPosting.deadline.isNull().or(jobPosting.deadline.goe(today))));
         }
         return filters;
     }

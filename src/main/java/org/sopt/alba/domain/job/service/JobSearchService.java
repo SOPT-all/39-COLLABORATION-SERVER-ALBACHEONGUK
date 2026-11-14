@@ -43,6 +43,10 @@ public class JobSearchService {
 
         String keyword = request.keyword() == null ? "" :
                 SPECIAL_CHARACTERS.matcher(request.keyword().toLowerCase(Locale.ROOT)).replaceAll("").strip();
+        // (데이터) 공백/특수문자만 남은 입력은 검색어 없는 상태로 처리하고, 최대 길이를 서버에서도 검증한다.
+        if (request.keyword() != null && request.keyword().codePointCount(0, request.keyword().length()) > 30) {
+            throw new BusinessException(GlobalErrorCode.INVALID_INPUT);
+        }
         LocalDate today = LocalDate.now(clock);
         return JobSearchResponse.of(request, jobSearchRepository.findJobs(request, keyword, payType, today), today);
     }

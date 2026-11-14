@@ -1,9 +1,9 @@
 package org.sopt.alba.domain.member.enums;
 
-/* COMPLETED: 작성 완료-추천 기준 이력서 후보
-DRAFT: 작성 중인 거 */
+/* (데이터) 작성 완료·작성 중·지원 불가 상태를 나타낸다. */
 
 public enum ResumeStatus {
     COMPLETED,
-    DRAFT
+    DRAFT,
+    NOT_APPLICABLE // (데이터) 지원 불가 이력서 상태
 }

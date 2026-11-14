@@ -24,7 +24,7 @@ public record JobSummaryResponse(
         String nearbySubway,
         String categoryName,
         PayType payType,
-        int payAmount,
+        Integer payAmount, // (데이터) 급여 협의 공고는 null
         String workPeriod,
         List<Workday> workdays,
         boolean daysNegotiable,
@@ -56,7 +56,7 @@ public record JobSummaryResponse(
                 posting.getNearbySubway(),
                 posting.getJobCategory().getName(),
                 posting.getPayType(),
-                posting.getPayAmount(),
+                posting.getPayAmount() == null || posting.getPayAmount() <= 0 ? null : posting.getPayAmount(), // (데이터)
                 posting.getWorkPeriod() == null ? null : posting.getWorkPeriod().getLabel(),
                 posting.getWorkdays().stream().sorted(Comparator.naturalOrder()).toList(),   // 월>일 순
                 posting.isDaysNegotiable(),
@@ -68,16 +68,22 @@ public record JobSummaryResponse(
                 posting.getDeadline(),
                 posting.isClosed(today),
                 postedLabel(posting.getPublishedAt(), today),
-                deadlineLabel(posting.getDeadline())
+                deadlineLabel(posting, today)
         );
     }
 
-    private static String deadlineLabel(LocalDate deadline) {
+    // (데이터) 기업 완료 상태도 화면의 마감 라벨에 반영한다.
+    private static String deadlineLabel(JobPosting posting, LocalDate today) {
+        if (posting.isClosed(today)) {
+            return "마감";
+        }
+        LocalDate deadline = posting.getDeadline();
         return deadline == null ? "상시모집"
                 : deadline.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) + " 마감";
     }
 
-    static String postedLabel(LocalDate publishedAt, LocalDate today) {
+    // (데이터) 검색 목록과 추천 카드가 같은 등록일 상대 라벨 정책을 사용한다.
+    public static String postedLabel(LocalDate publishedAt, LocalDate today) {
         long days = ChronoUnit.DAYS.between(publishedAt, today);
         if (days <= 0) {
             return "오늘";

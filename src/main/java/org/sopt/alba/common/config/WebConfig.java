@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "http://localhost:3000",
                         "http://localhost:5173",
-                        "https://*.vercel.app"   // TODO: 클라 배포 도메인 확정되면 정확한 주소로 교체 (이것까지 필요 없으면 삭제)
+                        "https://*.vercel.app"
                 )
                 .allowedMethods("GET", "OPTIONS")
                 .allowedHeaders("*")

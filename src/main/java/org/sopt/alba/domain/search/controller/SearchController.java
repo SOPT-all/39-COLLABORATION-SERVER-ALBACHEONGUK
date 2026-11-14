@@ -23,7 +23,7 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    @Operation(summary = "인기 검색어 조회", description = "DB에 저장된 검색어를 순위순으로 반환합니다. 실시간 집계 없이 로그인 없이 조회할 수 있습니다.")
+    @Operation(summary = "인기 검색어 조회", description = "기획 목업 순위를 반환합니다. 실시간 집계 없이 로그인 없이 조회할 수 있습니다.") // (데이터)
     @GetMapping("/popular-keywords")
     public ResponseEntity<CommonResponse<PopularKeywordsResponse>> getPopularKeywords(
             @Parameter(description = "메인 화면은 5개, 검색 결과 화면은 10개. 기본 10개",

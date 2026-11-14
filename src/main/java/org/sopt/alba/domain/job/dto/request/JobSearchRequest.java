@@ -9,6 +9,7 @@ import java.util.List;
 import org.sopt.alba.domain.job.enums.Workday;
 
 public record JobSearchRequest(
+        @Schema(description = "검색어. 앞뒤 공백 제거 후 최대 30자이며 특수문자는 검색어 매칭에서 제외됩니다.", maxLength = 30)
         String keyword,
         List<@NotNull @Positive Long> regionIds,
         List<@NotBlank String> categoryCodes,
