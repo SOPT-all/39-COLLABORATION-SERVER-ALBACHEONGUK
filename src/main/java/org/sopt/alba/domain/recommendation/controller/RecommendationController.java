@@ -2,6 +2,7 @@ package org.sopt.alba.domain.recommendation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -32,7 +33,8 @@ public class RecommendationController {
     @GetMapping("/region")
     public ResponseEntity<CommonResponse<RegionRecommendationResponse>>
     getRegionRecommendations(
-            @Parameter(description = "시·도 ID", example = "1", required = true)
+            @Parameter(description = "시·도 ID (Swagger 기본값: 1)", required = true,
+                    schema = @Schema(defaultValue = "1", example = "1"))
             @RequestParam("sido")
             @Positive(message = "sido는 1 이상이어야 합니다.")
             Long sidoId
