@@ -8,6 +8,7 @@ import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.HierarchyO
 import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.NamedOption;
 import org.sopt.alba.domain.job.enums.JobPayTypeCode;
 import org.sopt.alba.domain.job.enums.PayType;
+import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 import org.sopt.alba.domain.job.repository.JobCategoryRepository;
 import org.sopt.alba.domain.job.repository.RegionRepository;
@@ -29,6 +30,9 @@ public class JobFilterService {
                 // (데이터) 필터 옵션은 전체 급여 유형을 제공하고 API의 건별 코드는 PER_TASK로 통일한다.
                 Arrays.stream(PayType.values())
                         .map(payType -> new NamedOption(JobPayTypeCode.toApiCode(payType), payType.getLabel()))
+                        .toList(),
+                Arrays.stream(WorkPeriod.values())
+                        .map(period -> new NamedOption(period.name(), period.getLabel()))
                         .toList(),
                 Arrays.stream(Workday.values())
                         .map(day -> new NamedOption(day.name(), day.getLabel() + "요일"))

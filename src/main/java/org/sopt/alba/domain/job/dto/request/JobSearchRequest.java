@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
+import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 
 public record JobSearchRequest(
@@ -14,6 +15,8 @@ public record JobSearchRequest(
         List<@NotNull @Positive Long> regionIds,
         List<@NotBlank String> categoryCodes,
         List<@NotNull Workday> workdays,
+        @Schema(description = "필터 옵션의 근무기간 코드입니다. 전체 선택 시 생략합니다.")
+        WorkPeriod workPeriod,
         @Schema(
                 description = "급여 유형 코드입니다. 시급 10,000원 이상은 payType=HOURLY와 minPay=10000을 함께 보냅니다.",
                 allowableValues = {"HOURLY", "DAILY", "WEEKLY", "MONTHLY", "YEARLY", "PER_TASK"})

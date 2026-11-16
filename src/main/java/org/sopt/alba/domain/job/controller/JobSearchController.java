@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class JobSearchController {
 
     private static final List<String> SEARCH_PARAMETERS = List.of(
-            "keyword", "regionIds", "categoryCodes", "workdays",
+            "keyword", "regionIds", "categoryCodes", "workdays", "workPeriod",
             "payType", "minPay", "maxPay", "ongoing", "sort", "page", "size");
     private static final Set<String> MULTI_VALUE_PARAMETERS =
             Set.of("regionIds", "categoryCodes", "workdays");
