@@ -13,7 +13,6 @@ import org.sopt.alba.domain.job.dto.request.JobSearchRequest.SortType;
 import org.sopt.alba.domain.job.entity.JobPosting;
 import org.sopt.alba.domain.job.entity.Region;
 import org.sopt.alba.domain.job.enums.ExposureType;
-import org.sopt.alba.domain.job.enums.JobPayTypeCode;
 import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
 import org.springframework.data.domain.Page;
@@ -103,7 +102,7 @@ public record JobSearchResponse(
                     fullAddress(posting),
                     nearbySubway == null || nearbySubway.isBlank() ? null : nearbySubway.strip(),
                     posting.getJobCategory().getName(),
-                    JobPayTypeCode.toApiCode(posting.getPayType()),
+                    posting.getPayType().name(),
                     posting.getPayAmount() == null || posting.getPayAmount() <= 0 ? null : posting.getPayAmount(), // (데이터)
                     null,
                     null,

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse;
 import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.HierarchyOption;
 import org.sopt.alba.domain.job.dto.response.JobFilterOptionsResponse.NamedOption;
-import org.sopt.alba.domain.job.enums.JobPayTypeCode;
 import org.sopt.alba.domain.job.enums.PayType;
 import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
@@ -27,9 +26,8 @@ public class JobFilterService {
         return new JobFilterOptionsResponse(
                 findRegions(),
                 findCategories(),
-                // (데이터) 필터 옵션은 전체 급여 유형을 제공하고 API의 건별 코드는 PER_TASK로 통일한다.
                 Arrays.stream(PayType.values())
-                        .map(payType -> new NamedOption(JobPayTypeCode.toApiCode(payType), payType.getLabel()))
+                        .map(payType -> new NamedOption(payType.name(), payType.getLabel()))
                         .toList(),
                 Arrays.stream(WorkPeriod.values())
                         .map(period -> new NamedOption(period.name(), period.getLabel()))

@@ -23,7 +23,7 @@ public class JobController {
     @Operation(
             summary = "필터 옵션 조회",
             description = "급여 옵션(payConditions)은 시급/일급/주급/월급/연봉/건별입니다. "
-                    + "건별은 PER_TASK 코드이며, 선택한 code를 공고 검색의 payType으로 전달합니다.") // (데이터)
+                    + "건별은 PER_CASE 코드이며, 선택한 code를 공고 검색의 payType으로 전달합니다.") // (데이터)
     @GetMapping("/filters")
     public ResponseEntity<CommonResponse<JobFilterOptionsResponse>> findFilterOptions() {
         return CommonResponse.success(JobSuccessCode.GET_JOB_FILTERS_SUCCESS, jobFilterService.findOptions());

@@ -19,7 +19,7 @@ public record JobSearchRequest(
         WorkPeriod workPeriod,
         @Schema(
                 description = "급여 유형 코드입니다. 시급 10,000원 이상은 payType=HOURLY와 minPay=10000을 함께 보냅니다.",
-                allowableValues = {"HOURLY", "DAILY", "WEEKLY", "MONTHLY", "YEARLY", "PER_TASK"})
+                allowableValues = {"HOURLY", "DAILY", "WEEKLY", "MONTHLY", "YEARLY", "PER_CASE"})
         String payType,
         @PositiveOrZero
         @Schema(description = "선택한 급여 유형의 최소 금액입니다. payType을 함께 보내야 합니다.")
