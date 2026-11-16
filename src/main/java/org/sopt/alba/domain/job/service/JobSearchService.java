@@ -12,7 +12,6 @@ import org.sopt.alba.common.code.GlobalErrorCode;
 import org.sopt.alba.common.exception.BusinessException;
 import org.sopt.alba.domain.job.dto.request.JobSearchRequest;
 import org.sopt.alba.domain.job.dto.response.JobSearchResponse;
-import org.sopt.alba.domain.job.enums.JobPayTypeCode;
 import org.sopt.alba.domain.job.enums.PayType;
 import org.sopt.alba.domain.job.repository.JobCategoryRepository;
 import org.sopt.alba.domain.job.repository.JobSearchRepository;
@@ -74,7 +73,7 @@ public class JobSearchService {
             return null;
         }
         return Arrays.stream(PayType.values())
-                .filter(payType -> JobPayTypeCode.toApiCode(payType).equals(code))
+                .filter(payType -> payType.name().equals(code))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(GlobalErrorCode.INVALID_PARAMETER_TYPE));
     }

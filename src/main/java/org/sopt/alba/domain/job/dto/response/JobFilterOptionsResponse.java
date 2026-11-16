@@ -6,6 +6,7 @@ public record JobFilterOptionsResponse(
         List<HierarchyOption> regions,
         List<HierarchyOption> categories,
         List<NamedOption> payConditions,
+        List<NamedOption> workPeriods,
         List<NamedOption> workdays
 ) {
     public record HierarchyOption(String code, String name, String parentCode) {

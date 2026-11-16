@@ -96,6 +96,9 @@ public class JobSearchRepository {
             filters.and(jobPosting.daysNegotiable.isFalse()
                     .and(jobPosting.workdays.any().in(request.workdays())));
         }
+        if (request.workPeriod() != null) {
+            filters.and(jobPosting.workPeriod.eq(request.workPeriod()));
+        }
         if (payType != null) {
             filters.and(jobPosting.payType.eq(payType));
         }
