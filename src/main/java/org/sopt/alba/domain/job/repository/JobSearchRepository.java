@@ -113,6 +113,10 @@ public class JobSearchRepository {
             filters.and(jobPosting.recruitmentStatus.eq(RecruitmentStatus.RECRUITING)
                     .and(jobPosting.deadline.isNull().or(jobPosting.deadline.goe(today))));
         }
+        if (request.daysPerWeek() != null) {
+            filters.and(jobPosting.daysNegotiable.isFalse()
+                    .and(jobPosting.workdays.size().eq(request.daysPerWeek())));
+        }
         return filters;
     }
 

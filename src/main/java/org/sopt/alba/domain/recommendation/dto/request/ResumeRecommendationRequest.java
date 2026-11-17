@@ -1,9 +1,12 @@
 package org.sopt.alba.domain.recommendation.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import org.sopt.alba.domain.job.enums.PayType;
 import org.sopt.alba.domain.job.enums.WorkPeriod;
 import org.sopt.alba.domain.job.enums.Workday;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +22,13 @@ public record ResumeRecommendationRequest(
         List<Long> regionIds,
         List<String> categoryCodes,
         List<Workday> workdays,
+        @Min(1)
+        @Max(7)
+        @Schema(
+                description = "검색 결과의 주당 근무일수 필터. workDays에 등록된 요일 개수와 일치해야 합니다.",
+                example = "2"
+        )
+        Integer daysPerWeek,
         WorkPeriod workPeriod,
         PayType payType
 ) {
