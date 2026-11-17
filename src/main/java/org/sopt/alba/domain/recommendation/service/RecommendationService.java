@@ -182,6 +182,7 @@ public class RecommendationService {
                         request.keyword(),
                         request.categoryCodes(),
                         request.workdays(),
+                        request.daysPerWeek(),
                         request.workPeriod(),
                         request.payType()
                 );

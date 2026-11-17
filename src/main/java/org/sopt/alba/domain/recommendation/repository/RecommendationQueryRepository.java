@@ -50,7 +50,7 @@ public class RecommendationQueryRepository {
     public List<JobPosting> findMatchCandidates(LocalDate today, Collection<Long> appliedJobIds,
                                                 Collection<Long> regionIds, String keyword,
                                                 Collection<String> categoryCodes, Collection<Workday> workdays,
-                                                WorkPeriod workPeriod, PayType payType) {
+                                                Integer daysPerWeek, WorkPeriod workPeriod, PayType payType) {
         return queryFactory
                 .selectFrom(jobPosting)
                 .join(jobPosting.region, region).fetchJoin()
@@ -65,6 +65,7 @@ public class RecommendationQueryRepository {
                         inCategories(categoryCodes),
                         hasAnyWorkday(workdays),
                         workPeriodEq(workPeriod),
+                        daysPerWeekEq(daysPerWeek),
                         payTypeEq(payType)
                 )
                 .fetch();
@@ -137,5 +138,12 @@ public class RecommendationQueryRepository {
 
     private boolean isEmpty(Collection<?> values) {
         return values == null || values.isEmpty();
+    }
+
+    private BooleanExpression daysPerWeekEq(Integer daysPerWeek) {
+        return daysPerWeek == null
+                ? null
+                : jobPosting.daysNegotiable.isFalse()
+                  .and(jobPosting.workdays.size().eq(daysPerWeek));
     }
 }

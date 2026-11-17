@@ -49,7 +49,8 @@ public class RecommendationController {
             summary = "이력서 매칭 공고 추천",
             description = "선택 이력서와 맞는 공고를 점수순으로 최대 3건 조회합니다. "
                     + "X-Member-Id 헤더가 없으면 status=GUEST. resumeId를 바꾸면 그 이력서 기준으로 다시 추천합니다. "
-                    + "검색 결과 화면에서는 검색 조건(keyword, regionIds, categoryCodes, workdays, workPeriod, payType)을 같이 보냅니다."
+                    + "검색 결과 화면에서는 검색 조건(keyword, regionIds, categoryCodes, workdays, "
+                    + "daysPerWeek, workPeriod, payType)을 같이 보냅니다."
     )
     @GetMapping("/resume")
     public ResponseEntity<CommonResponse<ResumeRecommendationResponse>>
